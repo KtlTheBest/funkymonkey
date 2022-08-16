@@ -4,15 +4,18 @@ open Ast
 
 %token <string> ID
 %token <string> INT
+%token <string> STR
 
 %token SEMICOLON
 %token LPAR RPAR
 %token LCUR RCUR
+%token LSQR RSQR
 %token EQ
 %token LET FN
 %token COMMA
 %token ADD SUB MUL DIV MOD
 %token EQUAL NOTEQ LT GT LE GE
+%token TrueTok FalseTok NullTok
 %token INVALID
 %token EOF
 
@@ -24,6 +27,8 @@ open Ast
 %type <Expr> Expr3
 %type <Expr> Atom
 %type <Expr> ExprFn
+%type <Primitive> PrimitiveTok
+%type <BoolValue> BoolValueTok
 
 %type <Stat> Statement
 %type <Expr list> Args
@@ -54,7 +59,7 @@ Expr:
 | ExprFn         { $1 }
 
 ExprFn:
-| FN LPAR Args RPAR LCUR StatList RCUR { Function( $3, $6 ) }
+| FN LPAR Args RPAR LCUR StatList RCUR { FuncDef( $3, $6 ) }
 | ExprCond { $1 }
 
 ExprCond:
@@ -83,9 +88,21 @@ Expr2:
 Expr3: Atom { $1 }
 
 Atom:
-| INT { Integer( $1 |> int ) }
-| ID  { Identifier( $1 ) }
-| ExprFn LPAR Args RPAR { FuncCall( $1, $3 ) }
-| INVALID { Error }
+| INT                     { Integer( $1 |> int ) }
+| ID                      { Identifier( $1 ) }
+| STR                     { String( $1 ) }
+| PrimitiveTok            { $1 |> Primitive }
+| LSQR Args RSQR          { Array( $2 ) }
+| ExprFn LSQR ExprFn RSQR { IndexAccess( $3, $1 ) }
+| ExprFn LPAR Args RPAR   { FuncCall( $1, $3 ) }
+| INVALID                 { Error }
+
+PrimitiveTok:
+| NullTok  { Null }
+| BoolValueTok { $1 |> BoolValue }
+
+BoolValueTok:
+| TrueTok  { True }
+| FalseTok { False }
 
 %%

@@ -3,6 +3,9 @@ module Parser
 type token = 
   | EOF
   | INVALID
+  | TrueTok
+  | FalseTok
+  | NullTok
   | EQUAL
   | NOTEQ
   | LT
@@ -18,16 +21,22 @@ type token =
   | LET
   | FN
   | EQ
+  | LSQR
+  | RSQR
   | LCUR
   | RCUR
   | LPAR
   | RPAR
   | SEMICOLON
+  | STR of (string)
   | INT of (string)
   | ID of (string)
 type tokenId = 
     | TOKEN_EOF
     | TOKEN_INVALID
+    | TOKEN_TrueTok
+    | TOKEN_FalseTok
+    | TOKEN_NullTok
     | TOKEN_EQUAL
     | TOKEN_NOTEQ
     | TOKEN_LT
@@ -43,11 +52,14 @@ type tokenId =
     | TOKEN_LET
     | TOKEN_FN
     | TOKEN_EQ
+    | TOKEN_LSQR
+    | TOKEN_RSQR
     | TOKEN_LCUR
     | TOKEN_RCUR
     | TOKEN_LPAR
     | TOKEN_RPAR
     | TOKEN_SEMICOLON
+    | TOKEN_STR
     | TOKEN_INT
     | TOKEN_ID
     | TOKEN_end_of_input
@@ -66,6 +78,8 @@ type nonTerminalId =
     | NONTERM_Expr2
     | NONTERM_Expr3
     | NONTERM_Atom
+    | NONTERM_PrimitiveTok
+    | NONTERM_BoolValueTok
 /// This function maps tokens to integer indexes
 val tagOfToken: token -> int
 

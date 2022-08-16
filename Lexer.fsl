@@ -5,10 +5,14 @@ open Parser
 let lexeme lexbuf = LexBuffer<_>.LexemeString lexbuf
 }
 
+let TRUE  = "true"
+let FALSE = "false"
+let NULL  = "null"
 let char  = ['a'-'z' 'A'-'Z']
 let digit = [ '0'-'9' ]
 let int   = digit+
 let identifier = char(char|digit|'_')*
+let strliteral = '"'[^'"']*'"'
 let whitespace = [ ' ' '\t' ]
 let newline = '\n' | 'r' | "\n\r"
 
@@ -28,11 +32,17 @@ rule tokenize = parse
 | ">="       { GE }
 | '('        { LPAR }
 | ')'        { RPAR }
+| '['        { LSQR }
+| ']'        { RSQR }
 | '{'        { LCUR }
 | '}'        { RCUR }
+| TRUE       { TrueTok }
+| FALSE      { FalseTok }
+| NULL       { NullTok }
 | "let"      { LET }
 | "fn"       { FN }
 | int        { INT <| lexeme lexbuf }
 | identifier { ID  <| lexeme lexbuf }
+| strliteral { STR <| lexeme lexbuf }
 | eof        { EOF }
 | _          { INVALID }
