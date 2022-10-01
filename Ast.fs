@@ -1,26 +1,28 @@
-module Ast 
+module Ast
 
-type BoolValue
-  = True
-  | False
-
-type Primitive = Null | BoolValue of BoolValue
-
-type Expr 
-  = Primitive of Primitive
-  | Unit
+type DataType
+  = Null
+  | Identifier of string
+  | Boolean of bool
   | Integer of int
   | String of string
-  | Identifier of string
-  | Array of Expr list
-  | Function of args: Expr list * body: Stat list * env: Map<string, Expr>
-  | FuncDef of args: Expr list * body: Stat list
-  | FuncCall of func: Expr * args: Expr list
+  | Array of (Expr list)
+  | Function of args: Expr list * block: Stat list * env: Map<string, Expr>
+  | ReturnValue of Expr
+  | ErrorMsg of string
   | Error
-  | ErrorMsg of msg: string
+
+and Application
+  = FuncCall of f: Expr * args: Expr list
+  | FuncDef of args: Expr list * block: Stat list
+  | IndexAccess of index: Expr * array: Expr
   | Binary of a: Expr * op: Operator * b: Expr
   | Unary of op: Operator * e: Expr
-  | IndexAccess of indx: Expr * arr: Expr
+  | If of cond: Expr * truebranch: Stat list * falsebranch: Stat list
+
+and Expr =
+  | DataType of DataType
+  | Application of Application
 
 and Operator
   = Add
@@ -43,7 +45,6 @@ and Operator
 
 and Stat
   = Expr of Expr
-  | Let of Expr
+  | Let of name: string * value: Expr
   | Block of Stat list
-  | If of cond: Expr * truebranch: Stat list * falsebranch: Stat list
   | Return of Expr option

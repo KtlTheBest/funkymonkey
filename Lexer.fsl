@@ -43,6 +43,6 @@ rule tokenize = parse
 | "fn"       { FN }
 | int        { INT <| lexeme lexbuf }
 | identifier { ID  <| lexeme lexbuf }
-| strliteral { STR <| lexeme lexbuf }
+| strliteral { let s = lexeme lexbuf in s.[1..((String.length s) - 1)] |> STR }
 | eof        { EOF }
 | _          { INVALID }

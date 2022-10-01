@@ -8,6 +8,6 @@ let main argv =
   let lexbuf = Lexing.LexBuffer<_>.FromString code
   let res = Parser.StatList Lexer.tokenize lexbuf
 
-  let v = Eval.eval res
+  let _, v = Eval.eval res
   printfn "RES: %A" v
   0

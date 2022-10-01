@@ -27,8 +27,8 @@ open Ast
 %type <Expr> Expr3
 %type <Expr> Atom
 %type <Expr> ExprFn
-%type <Primitive> PrimitiveTok
-%type <BoolValue> BoolValueTok
+%type <DataType> PrimitiveTok
+%type <bool> BoolValueTok
 
 %type <Stat> Statement
 %type <Expr list> Args
@@ -42,9 +42,9 @@ StatList:
 | EOF { [] }
 | Statement StatList { $1 :: $2 }
 
-Statement: 
+Statement:
 |     Expr SEMICOLON { Expr( $1 ) }
-| LET Expr SEMICOLON { Let( $2 ) }
+| LET ID EQ Expr SEMICOLON { Let( $2, $4 ) }
 
 Args:
 |              { [] }
@@ -55,54 +55,54 @@ NonEmptyArgs:
 | ExprFn COMMA NonEmptyArgs { $1 :: $3 }
 
 Expr:
-| Expr EQ ExprFn { Binary( $1, Assign, $3 ) }
+| Expr EQ ExprFn { Binary( $1, Assign, $3 ) |> Application }
 | ExprFn         { $1 }
 
 ExprFn:
-| FN LPAR Args RPAR LCUR StatList RCUR { FuncDef( $3, $6 ) }
+| FN LPAR Args RPAR LCUR StatList RCUR { FuncDef( $3, $6 ) |> Application }
 | ExprCond { $1 }
 
 ExprCond:
-| ExprComp EQUAL ExprComp { Binary( $1, Equal,    $3 ) }
-| ExprComp NOTEQ ExprComp { Binary( $1, NotEqual, $3 ) }
+| ExprComp EQUAL ExprComp { Binary( $1, Equal,    $3 ) |> Application }
+| ExprComp NOTEQ ExprComp { Binary( $1, NotEqual, $3 ) |> Application }
 | ExprComp                { $1 }
 
 ExprComp:
-| Expr1 LT Expr1 { Binary( $1, LessThan,       $3 ) }
-| Expr1 GT Expr1 { Binary( $1, LessOrEqual,    $3 ) }
-| Expr1 LE Expr1 { Binary( $1, GreaterThan,    $3 ) }
-| Expr1 GE Expr1 { Binary( $1, GreaterOrEqual, $3 ) }
+| Expr1 LT Expr1 { Binary( $1, LessThan,       $3 ) |> Application }
+| Expr1 GT Expr1 { Binary( $1, LessOrEqual,    $3 ) |> Application }
+| Expr1 LE Expr1 { Binary( $1, GreaterThan,    $3 ) |> Application }
+| Expr1 GE Expr1 { Binary( $1, GreaterOrEqual, $3 ) |> Application }
 | Expr1 { $1 }
 
 Expr1:
-| Expr1 ADD Expr2 { Binary( $1, Add, $3 ) }
-| Expr1 SUB Expr2 { Binary( $1, Sub, $3 ) }
+| Expr1 ADD Expr2 { Binary( $1, Add, $3 ) |> Application }
+| Expr1 SUB Expr2 { Binary( $1, Sub, $3 ) |> Application }
 | Expr2           { $1 }
 
 Expr2:
-| Expr2 MUL Expr3 { Binary( $1, Mul, $3 ) }
-| Expr2 DIV Expr3 { Binary( $1, Div, $3 ) }
-| Expr2 MOD Expr3 { Binary( $1, Mod, $3 ) }
+| Expr2 MUL Expr3 { Binary( $1, Mul, $3 ) |> Application }
+| Expr2 DIV Expr3 { Binary( $1, Div, $3 ) |> Application }
+| Expr2 MOD Expr3 { Binary( $1, Mod, $3 ) |> Application }
 | Expr3           { $1 }
 
 Expr3: Atom { $1 }
 
 Atom:
-| INT                     { Integer( $1 |> int ) }
-| ID                      { Identifier( $1 ) }
-| STR                     { String( $1 ) }
-| PrimitiveTok            { $1 |> Primitive }
-| LSQR Args RSQR          { Array( $2 ) }
-| ExprFn LSQR ExprFn RSQR { IndexAccess( $3, $1 ) }
-| ExprFn LPAR Args RPAR   { FuncCall( $1, $3 ) }
-| INVALID                 { Error }
+| INT                     { Integer( $1 |> int ) |> DataType }
+| ID                      { Identifier( $1 ) |> DataType }
+| STR                     { String( $1 ) |> DataType }
+| PrimitiveTok            { $1 |> DataType }
+| LSQR Args RSQR          { $2 |> Array |> DataType }
+| ExprFn LSQR ExprFn RSQR { IndexAccess( $3, $1 ) |> Application }
+| ExprFn LPAR Args RPAR   { FuncCall( $1, $3 ) |> Application }
+| INVALID                 { Error |> DataType }
 
 PrimitiveTok:
 | NullTok  { Null }
-| BoolValueTok { $1 |> BoolValue }
+| BoolValueTok { $1 |> Boolean }
 
 BoolValueTok:
-| TrueTok  { True }
-| FalseTok { False }
+| TrueTok  { true }
+| FalseTok { false }
 
 %%
