@@ -246,7 +246,7 @@ and tokenize  lexbuf =
           )
   | 26 -> ( 
 # 46 "./Lexer.fsl"
-                              let s = lexeme lexbuf in s.[1..((String.length s) - 1)] |> STR 
+                              let s = lexeme lexbuf in s.[1..((String.length s) - 2)] |> STR 
 # 250 "Lexer.fs"
           )
   | 27 -> ( 
